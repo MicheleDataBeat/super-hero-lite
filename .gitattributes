@@ -1,0 +1,5 @@
+# The manifest records a SHA-256 of committed bytes, and every installer
+# compares installed bytes against packaged bytes. An end-of-line conversion on
+# checkout would therefore break verification on a host configured for CRLF, so
+# no path in this repository is ever converted.
+* -text

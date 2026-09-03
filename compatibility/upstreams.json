@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "distributions": [
+    {
+      "id": "codex",
+      "displayName": "Codex",
+      "testedHostCli": "0.148.0-alpha.21",
+      "hostCliEvidence": "inherited from super-hero-workflow 1.6.4; not re-measured for Lite 1.0.0",
+      "requiredCapabilities": [
+        "filesystem",
+        "shell",
+        "persistent-instruction-discovery",
+        "persistent-skill-discovery"
+      ],
+      "dependencies": [
+        {
+          "id": "mattpocock-skills",
+          "repository": "https://github.com/mattpocock/skills",
+          "license": "MIT",
+          "testedRef": "v1.2.3",
+          "testedCommit": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+          "manager": "skills",
+          "detection": {
+            "lockFile": ".agents/.skill-lock.json",
+            "source": "mattpocock/skills"
+          }
+        },
+        {
+          "id": "superpowers",
+          "repository": "https://github.com/obra/superpowers",
+          "license": "MIT",
+          "testedRef": "v6.3.0",
+          "testedCommit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+          "manager": "codex-plugin-marketplace",
+          "detection": {
+            "pluginId": "superpowers@openai-curated",
+            "requiredState": "enabled"
+          }
+        }
+      ]
+    },
+    {
+      "id": "claude-code",
+      "displayName": "Claude Code",
+      "testedHostCli": "2.1.258",
+      "hostCliEvidence": "measured 2026-09-03 on macOS 15 (arm64)",
+      "requiredCapabilities": [
+        "filesystem",
+        "shell",
+        "persistent-instruction-discovery",
+        "persistent-skill-discovery"
+      ],
+      "dependencies": [
+        {
+          "id": "mattpocock-skills",
+          "repository": "https://github.com/mattpocock/skills",
+          "license": "MIT",
+          "testedRef": "v1.2.3",
+          "testedCommit": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+          "manager": "skills",
+          "detection": {
+            "lockFile": ".agents/.skill-lock.json",
+            "source": "mattpocock/skills"
+          }
+        },
+        {
+          "id": "superpowers",
+          "repository": "https://github.com/obra/superpowers",
+          "license": "MIT",
+          "testedRef": "5.1.0",
+          "testedCommit": "6fd4507659784c351abbd2bc264c7162cfd386dc",
+          "manager": "claude-code-plugin-marketplace",
+          "detection": {
+            "pluginId": "superpowers@superpowers-marketplace",
+            "requiredState": "enabled"
+          }
+        }
+      ]
+    }
+  ]
+}

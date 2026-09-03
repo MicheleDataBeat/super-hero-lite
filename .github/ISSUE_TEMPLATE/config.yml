@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General one-to-one usage support is not currently offered
+    url: https://github.com/MicheleDataBeat/super-hero-lite/blob/main/SUPPORT.md
+    about: Use the bug report form for reproducible defects or the feature request form for focused improvements.
+  - name: Security vulnerability reporting
+    url: https://github.com/MicheleDataBeat/super-hero-lite/blob/main/SECURITY.md
+    about: Follow the security policy; do not disclose vulnerabilities in public Issues.

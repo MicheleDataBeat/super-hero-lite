@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible problem in Super-Hero Lite.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem. Do not include secrets,
+        credentials, private keys, or unredacted personal data. Security
+        vulnerabilities must use the private process in SECURITY.md, not this form.
+  - type: input
+    id: affected-version
+    attributes:
+      label: Affected version
+      description: Which Super-Hero Lite version is affected?
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: host-distribution
+    attributes:
+      label: Host Distribution
+      description: Which Host Distribution are you using?
+      placeholder: Codex
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Give the smallest safe sequence that reproduces the problem.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Include any safe error text.
+    validations:
+      required: true
+  - type: textarea
+    id: validation-output
+    attributes:
+      label: Redacted validation output
+      description: Paste relevant output from the root validator after removing sensitive data.
+      render: shell
+    validations:
+      required: true

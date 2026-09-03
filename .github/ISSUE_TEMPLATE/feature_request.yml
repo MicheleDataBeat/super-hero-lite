@@ -1,0 +1,48 @@
+name: Feature request
+description: Propose a focused improvement to Super-Hero Lite.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the user problem. Please do not include secrets or private
+        repository data, and do not use this form for security reports.
+  - type: input
+    id: affected-version
+    attributes:
+      label: Affected version
+      description: Which Super-Hero Lite version are you using or targeting?
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: host-distribution
+    attributes:
+      label: Host Distribution
+      description: Which Host Distribution would this affect?
+      placeholder: Codex
+    validations:
+      required: true
+  - type: textarea
+    id: user-problem
+    attributes:
+      label: User problem
+      description: What problem or unmet need are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-outcome
+    attributes:
+      label: Proposed outcome
+      description: Describe the observable result, not only an implementation idea.
+    validations:
+      required: true
+  - type: textarea
+    id: host-impact
+    attributes:
+      label: Host impact
+      description: Explain the expected impact on this Host Distribution and Lite's core.
+    validations:
+      required: true

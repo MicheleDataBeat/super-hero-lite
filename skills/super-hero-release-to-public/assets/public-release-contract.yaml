@@ -1,0 +1,51 @@
+schema_version: 1
+
+# PRIVATE canonical source. Never change this repository to public visibility.
+source:
+  canonical_repository: "DECIDE"
+  required_visibility: private
+  branch: main
+  require_clean_tree: true
+
+# SEPARATE public distribution repository.
+public:
+  repository: "DECIDE"
+  required_visibility: public
+  branch: main
+
+history:
+  initial: clean_snapshot
+  subsequent: preserve_public_history
+  allow_force_push: false
+
+release:
+  version_source: "DECIDE"    # package_manifest | explicit | tag | other agreed source
+  tag_format: "v{version}"
+  public_commit_message: "Release {version}"
+
+export:
+  # `.release/**` is mandatory so this private policy file is never published.
+  deny:
+    - ".release/**"
+    - ".scratch/**"
+    - ".codex/**"
+  # Decide whether project .agents material is public documentation or
+  # agent-private. If it is ambiguous, ask before adding a rule.
+  allow: []
+
+branding:
+  replacements: []
+  forbidden_literals: []
+
+verification:
+  # A real secret scanner is required. If none is available, ask rather than
+  # downgrading the scan.
+  secret_scanner: gitleaks
+  test_commands: []
+  build_commands: []
+  forbidden_literal_scan: true
+
+publication:
+  create_target_if_missing: "DECIDE"
+  create_github_release: "DECIDE"
+  require_final_publish_confirmation: true

@@ -1,0 +1,5 @@
+.worktrees/
+.release/
+__pycache__/
+*.pyc
+*.pyo

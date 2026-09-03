@@ -1,0 +1,108 @@
+name: Windows
+
+# Windows is tested when Windows is touched. A pull request that changes only
+# documents or skills never starts these jobs, so it costs no Windows runner;
+# the Linux job in validate.yml still runs the whole contract on everything.
+#
+# The granularity is the pull request, not the commit: on a pull_request event
+# the filter is evaluated against the whole pull request diff. That is the
+# right granularity, since what merges is the whole diff.
+#
+# The paths are deliberately wider than the Windows-only files. They also cover
+# the cross-platform Python that executes on a Windows runner, because that is
+# where several of the platform defects this job family has caught actually
+# lived: in a distribution library and in the eval suites rather than in a
+# .ps1 file.
+
+on:
+  pull_request:
+    paths:
+      - '**/*.ps1'
+      - '.gitattributes'
+      - '.github/workflows/windows.yml'
+      - 'scripts/manifest.py'
+      - 'distributions/*/lib/**'
+      - 'distributions/*/evals/**'
+      - 'evals/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.ps1'
+      - '.gitattributes'
+      - '.github/workflows/windows.yml'
+      - 'scripts/manifest.py'
+      - 'distributions/*/lib/**'
+      - 'distributions/*/evals/**'
+      - 'evals/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate package
+        run: pwsh ./validate.ps1
+
+  install:
+    # The package validator cannot prove an installation. This job installs the
+    # real upstream prerequisites and runs the real lifecycle against them. It
+    # needs no secret: the Pocock skills, the Claude Code CLI and the
+    # Superpowers plugin all install from public sources, and gh authenticates
+    # with the automatic workflow token.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the Matt Pocock skills
+        shell: pwsh
+        run: npx --yes skills add https://github.com/mattpocock/skills --skill '*' --agent claude-code --global --yes
+
+      - name: Install the Claude Code CLI
+        shell: pwsh
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Enable the Superpowers plugin
+        shell: pwsh
+        run: |
+          claude plugin marketplace add obra/superpowers-marketplace
+          claude plugin install superpowers@superpowers-marketplace
+          claude plugin list --json
+
+      - name: Install and validate the distribution
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .\distributions\claude-code\install.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\distributions\claude-code\validate.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Uninstall must remove what it owns and nothing else
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .\distributions\claude-code\uninstall.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          # A validator that still passes here would prove nothing at all.
+          .\distributions\claude-code\validate.ps1
+          if ($LASTEXITCODE -eq 0) {
+              [Console]::Error.WriteLine('ERROR: the distribution still validates after uninstall')
+              exit 1
+          }
+
+          $prerequisite = Join-Path $HOME '.claude/skills/tdd/SKILL.md'
+          if (-not (Test-Path $prerequisite)) {
+              [Console]::Error.WriteLine('ERROR: uninstall removed a prerequisite skill it does not own')
+              exit 1
+          }
+          'PASS  uninstall removed package-owned state and left the prerequisites'
+          # The validator above was expected to fail, so its status is still the
+          # last one set. This step's verdict is the one reached here.
+          exit 0
