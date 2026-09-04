@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 TAGLINE = "Lightweight governance for frontier AI coding agents."
 
 REQUIRED_FILES = (
@@ -89,6 +89,7 @@ SUITES = (
     ("removed architecture", "evals/test_removed_architecture.py"),
     ("Codex lifecycle", "distributions/codex/evals/test_lifecycle.py"),
     ("Claude Code lifecycle", "distributions/claude-code/evals/test_lifecycle.py"),
+    ("Claude Code plugin", "evals/test_claude_code_plugin.py"),
     ("repository contract", "evals/test_repository_contract.py"),
 )
 
@@ -558,6 +559,8 @@ class ContinuousIntegrationTests(unittest.TestCase):
             "'scripts/manifest.py'",
             "'distributions/*/lib/**'",
             "'distributions/*/evals/**'",
+            "'distributions/claude-code/plugin/**'",
+            "'.claude-plugin/**'",
             "'evals/**'",
         ):
             with self.subTest(path=filtered):
@@ -569,6 +572,7 @@ class ContinuousIntegrationTests(unittest.TestCase):
             "Install the Matt Pocock skills",
             "Install the Claude Code CLI",
             "Enable the Superpowers plugin",
+            "Validate and install the Claude Code plugin",
             "Install and validate the distribution",
             "Uninstall must remove what it owns and nothing else",
         ):
@@ -579,6 +583,13 @@ class ContinuousIntegrationTests(unittest.TestCase):
         self.assertIn("the distribution still validates after uninstall", workflow)
         self.assertIn(
             "uninstall removed a prerequisite skill it does not own", workflow
+        )
+        self.assertIn(
+            "uninstall removed the plugin, which it does not own", workflow
+        )
+        # The one shell the local suite cannot exercise.
+        self.assertIn(
+            "reproduces the session context under PowerShell", workflow
         )
 
 

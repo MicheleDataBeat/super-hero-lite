@@ -6,8 +6,8 @@ prerequisites and behavior explicit.
 
 ## Current support
 
-Two host distributions ship in version 1.0.0: `codex` and `claude-code`. This
-release promises no third host.
+Two host distributions ship: `codex` and `claude-code`. No third host is
+promised.
 
 | Host distribution | Configuration directory | Persistent instructions | Persistent skills |
 | --- | --- | --- | --- |
@@ -25,8 +25,53 @@ dependency locks, plugin state, and anything under `agents/`. A distribution
 never reads or rewrites them, and its uninstaller never removes them.
 
 Ownership is by exact name. Adding a fourth owned skill means changing
-`LITE_SKILLS` in both distributions and the set in
-`evals/test_skill_packages.py`, which fails if the two disagree.
+`LITE_SKILLS` in both distributions, the set in
+`evals/test_skill_packages.py`, which fails if the two disagree, and the
+Claude Code plugin's own copy of the skills, which
+`evals/test_claude_code_plugin.py` compares byte for byte.
+
+## Delivery forms
+
+An installer is not the only way a host can receive the package.
+`claude-code` has a second: a plugin, installed by Claude Code's own package
+manager from the marketplace manifest at the repository root.
+
+The plugin is not a third host distribution. It carries the same three skills
+and the same instruction text to the same host, and the table above still
+describes where that host keeps things. What differs is who performs the
+lifecycle.
+
+| | Installer | Plugin |
+| --- | --- | --- |
+| Performed by | `install.sh` / `install.ps1` | `/plugin install` |
+| Skills | copied into `$CLAUDE_CONFIG_DIR/skills/` | shipped in the plugin, loaded by the host |
+| Skill invocation | `super-hero-core` | `super-hero-lite:super-hero-core` |
+| Persistent instructions | one marked block in `CLAUDE.md` | a `SessionStart` hook printing the same block |
+| Prerequisites | validated read-only before any mutation | not checked by anything: the host owns the install lifecycle and does not know Lite's upstreams |
+| State in the configuration directory | one instruction file and three skill directories, owned by the distribution | none of its own; Claude Code records the marketplace and the enabled plugin in `settings.json` and unpacks the plugin under `plugins/` |
+
+Two constraints shape the plugin rather than a choice about design. A plugin
+may not reference a path outside its own root, so it carries a copy of the
+three skills instead of pointing at them. And a `CLAUDE.md` at a plugin root
+is not loaded as context, so the instruction block is delivered by a
+`SessionStart` hook, whose plain-text output Claude Code adds to the session.
+
+The hook is worth naming plainly: this delivery form registers a command the
+host runs at the start of every session, where the installer only writes
+static text. The command reads one packaged file and prints it.
+
+Both consequences are duplication, and duplication is only safe while
+something fails when the copies disagree.
+`evals/test_claude_code_plugin.py` compares the skill trees byte for byte,
+derives the hook's text from the packaged bootstrap fragment under two
+declared substitutions, and runs the hook's own command to read back what a
+session would receive.
+
+The two forms coexist on one machine, because the host namespaces a plugin
+skill. Neither reads or removes the state the other owns: the installer's
+skill directories and instruction block, and the host's plugin cache, are
+disjoint. Installing both means the policy text reaches a session twice, once
+naming each set of skill ids.
 
 ## Supported platforms
 

@@ -22,9 +22,18 @@ is not evidence.
 
 This repository's own governance is executable, so a change to what it promises
 is a change to a test. Adding, removing or renaming a first-party skill means
-updating `evals/test_skill_packages.py`, both distributions' `LITE_SKILLS`, and
-every README that names the set. Reintroducing anything in
-`evals/test_removed_architecture.py` is a product decision, not a refactor.
+updating `evals/test_skill_packages.py`, both distributions' `LITE_SKILLS`,
+the Claude Code plugin's copy of the skills, and every README that names the
+set. Reintroducing anything in `evals/test_removed_architecture.py` is a
+product decision, not a refactor.
+
+The Claude Code host has two delivery forms, and the plugin necessarily
+duplicates material the installer already ships: the three skills, because a
+plugin may not reference a path outside its own root, and the bootstrap block,
+because a plugin contributes context through a hook rather than through
+`CLAUDE.md`. Edit the packaged original, then let
+`evals/test_claude_code_plugin.py` tell you what the plugin still owes it.
+Never edit only one side.
 
 Update user-facing documentation whenever a change affects installation,
 workflow behavior, compatibility, security or governance.

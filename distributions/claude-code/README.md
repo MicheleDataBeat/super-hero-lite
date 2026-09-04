@@ -36,3 +36,14 @@ On Windows, run `install.ps1`, `validate.ps1`, `validate.ps1 -Package` and `unin
 Install and update are the same idempotent command. Both install and uninstall snapshot package-owned state before mutation and restore that snapshot after a post-mutation failure.
 
 Super-Hero Lite is a new product with new installation state. It carries no migration path for an installation created by `super-hero-workflow`; uninstall that separately with its own uninstaller if you no longer want it.
+
+## Plugin
+
+Claude Code can also install this distribution as a plugin, with no clone and no shell:
+
+```
+/plugin marketplace add MicheleDataBeat/super-hero-lite
+/plugin install super-hero-lite@super-hero-lite
+```
+
+The plugin is a second delivery form of this distribution rather than a separate product: the same three skills and the same instruction text, installed by Claude Code's own package manager. It validates no prerequisites, and it writes no state of its own: Claude Code records the marketplace and the enabled plugin in `settings.json` and unpacks the plugin under `plugins/`, so `$CLAUDE_CONFIG_DIR/skills/` and `CLAUDE.md` are never touched, and this distribution's installer, uninstaller and validator neither read nor manage any of it. Either form is enough on its own, and a machine may carry both. See [`plugin/README.md`](plugin/README.md).

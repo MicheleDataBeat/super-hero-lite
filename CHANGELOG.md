@@ -8,6 +8,34 @@ not a fork, so the ancestor's release chronology is deliberately not carried
 over. What was inherited and what was removed is recorded in
 [Lineage](docs/lineage.md).
 
+## 1.1.0 — 2026-09-04
+
+### Added
+
+- A Claude Code plugin, at `distributions/claude-code/plugin`, published
+  through a marketplace manifest at the repository root. It is a second
+  delivery form for the Claude Code host distribution, not a third host: the
+  same three skills and the same governance, installed by Claude Code's own
+  package manager instead of by `install.sh`. Installing it needs no clone, no
+  shell and no prerequisite validation step.
+- `evals/test_claude_code_plugin.py`, which binds the plugin to the material
+  the installer already ships: the plugin's skills against the packaged skills
+  byte for byte, its session context against the packaged bootstrap fragment
+  under two declared substitutions, and its `SessionStart` hook by running the
+  hook's own command and reading what it prints.
+
+### Changed
+
+- The root validators run one more suite. Both entry points still declare the
+  same suites in the same order.
+
+### Unchanged
+
+- Both installers, both uninstallers, both distribution validators, the three
+  skills and the recorded compatibility baselines. The plugin adds a way to
+  install Super-Hero Lite; it changes nothing about the existing one, and no
+  first-party skill gained, lost or altered a rule.
+
 ## 1.0.0 — 2026-09-03
 
 First release.

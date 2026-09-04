@@ -52,6 +52,7 @@ $suites = @(
     @{ Label = 'removed architecture'; Module = 'evals/test_removed_architecture.py' }
     @{ Label = 'Codex lifecycle'; Module = 'distributions/codex/evals/test_lifecycle.py' }
     @{ Label = 'Claude Code lifecycle'; Module = 'distributions/claude-code/evals/test_lifecycle.py' }
+    @{ Label = 'Claude Code plugin'; Module = 'evals/test_claude_code_plugin.py' }
     @{ Label = 'repository contract'; Module = 'evals/test_repository_contract.py' }
 )
 

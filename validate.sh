@@ -30,6 +30,7 @@ run_check "skill packages" python3 -m unittest evals/test_skill_packages.py -v
 run_check "removed architecture" python3 -m unittest evals/test_removed_architecture.py -v
 run_check "Codex lifecycle" python3 -m unittest distributions/codex/evals/test_lifecycle.py -v
 run_check "Claude Code lifecycle" python3 -m unittest distributions/claude-code/evals/test_lifecycle.py -v
+run_check "Claude Code plugin" python3 -m unittest evals/test_claude_code_plugin.py -v
 run_check "repository contract" python3 -m unittest evals/test_repository_contract.py -v
 run_check "shell syntax" find . -type f \( -name '*.sh' -o -name '*.command' \) \
   -not -path './.git/*' -exec sh -c \

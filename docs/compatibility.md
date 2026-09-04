@@ -51,6 +51,39 @@ Two things were **not** measured, and are recorded as such rather than assumed:
   Python, to propagate the exit status, and to resolve the interpreter with one
   identical block.
 
+## What was measured for 1.1.0
+
+On 2026-09-04, on macOS 15 (arm64), for the Claude Code plugin added in this
+release, with `claude` reporting `2.1.258` as in 1.0.0:
+
+| Check | Result |
+| --- | --- |
+| Root `./validate.sh`, including the new plugin suite | pass |
+| `claude plugin validate` on the marketplace manifest and the plugin, `--strict` | pass, both |
+| Plugin installed from a local marketplace into an isolated `CLAUDE_CONFIG_DIR` | pass |
+| Component inventory read back from the host | 3 skills, 0 agents, 1 `SessionStart` hook |
+| Installed skills compared with the packaged skills | byte-identical |
+| Hook command run under `sh`, output compared with the packaged file | byte-identical |
+| Plugin uninstalled | pass, nothing left in the inventory |
+
+Three things were **not** measured, and are recorded as such rather than
+assumed:
+
+- **That Claude Code invokes the hook and adds its output to a session.** No
+  live session was run, because the CLI on the build machine had no valid
+  authenticated session. What was verified is that the command resolves, runs
+  and prints exactly the packaged file. That the host executes `SessionStart`
+  hooks and adds their plain-text output to the context is the host's
+  documented behavior, relied on here rather than measured.
+- **The Windows shell path.** The local suite runs the hook command under
+  `sh`, which is not the shell Windows uses. Windows CI runs the same command
+  under PowerShell, where `cat` is `Get-Content`, and compares the text; that
+  job is where this is verified.
+- **The published `owner/repo` marketplace source.** Only the local directory
+  form was exercised, since the release had not been published when this was
+  measured. The same workflow exercises the `owner/repo` form for the
+  Superpowers marketplace, so the host path is not itself untested.
+
 ## Recorded upstream baseline for codex
 
 | Upstream | Tested ref | Tested commit | Licence | Installation manager |
@@ -133,7 +166,11 @@ as skipped rather than passed.
 A second Windows job installs the real upstream prerequisites from public
 sources and runs the real Claude Code lifecycle against them, because a package
 validator cannot prove an installation. It needs no secret: `gh` authenticates
-with the automatic workflow token.
+with the automatic workflow token. Since 1.1.0 it also validates both plugin
+manifests against the host's own schema, installs the plugin and reads the
+inventory back, and runs the `SessionStart` hook's command under PowerShell to
+confirm it reproduces the packaged text; that is the only place the Windows
+shell path is exercised.
 
 ## Changing a baseline
 

@@ -145,6 +145,19 @@ Install and update are the same idempotent command. An installer manages only Su
 ./distributions/claude-code/uninstall.sh
 ```
 
+### Claude Code plugin
+
+Claude Code also installs Super-Hero Lite as a plugin, with no clone and no shell:
+
+```
+/plugin marketplace add MicheleDataBeat/super-hero-lite
+/plugin install super-hero-lite@super-hero-lite
+```
+
+The plugin is a second delivery form of the Claude Code distribution rather than a third host: the same three skills and the same governance, installed by Claude Code's own package manager. It ships the skills the host loads itself, plus a `SessionStart` hook carrying the instruction block the installer writes into `CLAUDE.md`. The host namespaces a plugin skill, so that block names `super-hero-lite:super-hero-core` where the installed one names `super-hero-core`, and says the skills come from the plugin rather than from the skills directories; those two substitutions are declared in `evals/test_claude_code_plugin.py`, which derives the plugin's copy from the packaged fragment and fails if either file drifts, so the two delivery forms cannot come to say different things.
+
+Either form is enough on its own. They coexist, and neither reads or modifies the state the other owns. The plugin validates no prerequisites, but the product still has the same ones: see [`distributions/claude-code/README.md`](distributions/claude-code/README.md#prerequisites) for the complete prerequisite contract, and [`distributions/claude-code/plugin/README.md`](distributions/claude-code/plugin/README.md) for the plugin itself.
+
 ## Validate
 
 From the repository root:
@@ -194,6 +207,7 @@ See [Compatibility](docs/compatibility.md) and [Upstream integrations](UPSTREAM.
 
 - [Architecture](docs/architecture.md)
 - [Host distributions](docs/host-distributions.md)
+- [Claude Code plugin](distributions/claude-code/plugin/README.md)
 - [Compatibility](docs/compatibility.md)
 - [Release model](docs/release-model.md)
 - [Lineage](docs/lineage.md)

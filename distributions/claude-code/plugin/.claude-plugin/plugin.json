@@ -1,0 +1,20 @@
+{
+  "name": "super-hero-lite",
+  "displayName": "Super-Hero Lite",
+  "description": "Lightweight governance for frontier AI coding agents: three execution modes, a decision boundary, evidence before a completion claim, and an explicit public-release gate.",
+  "version": "1.1.0",
+  "author": {
+    "name": "MicheleDataBeat",
+    "url": "https://github.com/MicheleDataBeat"
+  },
+  "homepage": "https://github.com/MicheleDataBeat/super-hero-lite",
+  "repository": "https://github.com/MicheleDataBeat/super-hero-lite",
+  "license": "MIT",
+  "keywords": [
+    "governance",
+    "workflow",
+    "release",
+    "safety",
+    "review"
+  ]
+}

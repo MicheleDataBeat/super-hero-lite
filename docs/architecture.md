@@ -58,6 +58,12 @@ Claude Code also honors a per-skill availability control in the user scope of
 its `settings.json`, which Codex has no equivalent for. That is a real
 difference in what a host can express, not an inconsistency to paper over.
 
+Claude Code also has a package manager of its own, so it has a second delivery
+form: a plugin. That is a difference in how the host installs, not in what
+Lite governs, so it lives inside the `claude-code` distribution rather than
+beside it. [Host distributions](host-distributions.md) records what the two
+forms share and the two constraints that make the plugin's copies necessary.
+
 ## Why the two distributions are not merged
 
 Their lifecycle implementations are structurally similar and deliberately
@@ -83,6 +89,7 @@ mechanism for the claims this repository makes about itself:
 | `test_removed_architecture.py` | every deletion in [Lineage](lineage.md), by scanning what actually ships |
 | `test_repository_contract.py` | the documents against the code they describe, and both validators against each other |
 | each distribution's `test_lifecycle.py` | the real entry points against a fixture host: staging, snapshot, rollback, idempotency, ownership |
+| `test_claude_code_plugin.py` | the Claude Code plugin against the material the installer ships: the skill copies, the session context, and the hook's own output |
 
 `evals/core-cases.md` carries the behavioral cases a unit test cannot honestly
 evaluate, and `test_skill_packages.py` binds it to the core so the two cannot

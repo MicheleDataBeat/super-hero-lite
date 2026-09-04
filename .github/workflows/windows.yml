@@ -23,6 +23,8 @@ on:
       - 'scripts/manifest.py'
       - 'distributions/*/lib/**'
       - 'distributions/*/evals/**'
+      - 'distributions/claude-code/plugin/**'
+      - '.claude-plugin/**'
       - 'evals/**'
   push:
     branches:
@@ -34,6 +36,8 @@ on:
       - 'scripts/manifest.py'
       - 'distributions/*/lib/**'
       - 'distributions/*/evals/**'
+      - 'distributions/claude-code/plugin/**'
+      - '.claude-plugin/**'
       - 'evals/**'
 
 permissions:
@@ -72,6 +76,46 @@ jobs:
           claude plugin install superpowers@superpowers-marketplace
           claude plugin list --json
 
+      - name: Validate and install the Claude Code plugin
+        shell: pwsh
+        run: |
+          claude plugin validate . --strict
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          claude plugin validate distributions/claude-code/plugin --strict
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          # The manifest validator cannot prove an installation, so install the
+          # plugin the way a user does and read the inventory back. The local
+          # source has to be written `./`: a bare `.` is rejected as an invalid
+          # marketplace source, while `claude plugin validate` above accepts it.
+          claude plugin marketplace add ./
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          claude plugin install super-hero-lite@super-hero-lite
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $installed = claude plugin list --json | ConvertFrom-Json
+          $lite = @($installed | Where-Object { $_.id -eq 'super-hero-lite@super-hero-lite' })
+          if ($lite.Count -ne 1 -or -not $lite[0].enabled) {
+              [Console]::Error.WriteLine('ERROR: the plugin did not install enabled')
+              exit 1
+          }
+          'PASS  the plugin installed and is enabled'
+
+          # The SessionStart hook is shell form, so on Windows it runs under
+          # Git Bash or PowerShell. `cat` is a PowerShell alias for
+          # Get-Content, which round-trips through the pipeline rather than
+          # copying bytes, so run it the way the host would and compare the
+          # text. Nothing else exercises this shell.
+          $root = $lite[0].installPath
+          $printed = cat "$root/hooks/session-context.md" | Out-String
+          $packaged = Get-Content -Raw 'distributions/claude-code/plugin/hooks/session-context.md'
+          $normalise = { param($text) ($text -replace "`r`n", "`n").TrimEnd() }
+          if ((& $normalise $printed) -ne (& $normalise $packaged)) {
+              [Console]::Error.WriteLine('ERROR: the hook command does not reproduce the session context under PowerShell')
+              exit 1
+          }
+          'PASS  the hook command reproduces the session context under PowerShell'
+
       - name: Install and validate the distribution
         shell: pwsh
         env:
@@ -100,6 +144,12 @@ jobs:
           $prerequisite = Join-Path $HOME '.claude/skills/tdd/SKILL.md'
           if (-not (Test-Path $prerequisite)) {
               [Console]::Error.WriteLine('ERROR: uninstall removed a prerequisite skill it does not own')
+              exit 1
+          }
+
+          $remaining = claude plugin list --json | ConvertFrom-Json
+          if (-not @($remaining | Where-Object { $_.id -eq 'super-hero-lite@super-hero-lite' })) {
+              [Console]::Error.WriteLine('ERROR: uninstall removed the plugin, which it does not own')
               exit 1
           }
           'PASS  uninstall removed package-owned state and left the prerequisites'

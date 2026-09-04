@@ -22,6 +22,8 @@ test:
   Bringing one back is a product decision, not a refactor.
 - `evals/test_repository_contract.py` binds the documents to the code they
   describe.
+- `evals/test_claude_code_plugin.py` holds the Claude Code plugin to the
+  material the installer ships, so the two delivery forms cannot drift apart.
 - Each distribution's lifecycle suite drives the real entry points.
 
 Run `./validate.sh` and read its output before claiming anything works.
