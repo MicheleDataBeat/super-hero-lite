@@ -6,15 +6,16 @@ those values; it is not an independent version registry.
 
 Every recorded host baseline also says how it was established, so a number
 inherited from the ancestor is never mistaken for one this release measured.
-`evals/test_compatibility.py` fails if a rendered value and the metadata
-disagree, or if a baseline carries no provenance.
+`evals/test_repository_contract.py` fails if a rendered value or a platform
+mention disagrees with the metadata, and `evals/test_compatibility.py` fails if
+a baseline carries no provenance.
 
 ## Recorded host profiles
 
 | Host distribution | Tested host CLI | Evidence | Required capabilities |
 | --- | --- | --- | --- |
 | `codex` | Codex CLI `0.148.0-alpha.21` | inherited from super-hero-workflow 1.6.4; not re-measured for Lite 1.0.0 | `filesystem`, `shell`, `persistent-instruction-discovery`, `persistent-skill-discovery` |
-| `claude-code` | Claude Code CLI `2.1.258` | measured 2026-09-03 on macOS 15 (arm64) | `filesystem`, `shell`, `persistent-instruction-discovery`, `persistent-skill-discovery` |
+| `claude-code` | Claude Code CLI `2.1.258` | measured 2026-09-03 on macOS 26 (arm64) | `filesystem`, `shell`, `persistent-instruction-discovery`, `persistent-skill-discovery` |
 
 The supported-host contract is broader than those two profiles: a host needs
 filesystem access, shell execution, and persistent instruction or skill
@@ -22,7 +23,7 @@ discovery through which all three Lite skill IDs are invocable or discoverable.
 
 ## What was measured for 1.0.0
 
-On 2026-09-03, on macOS 15 (arm64) with Python 3.12.7, `git` 2.43.0 and `gh`
+On 2026-09-03, on macOS 26 (arm64) with Python 3.12.7, `git` 2.43.0 and `gh`
 2.96.0:
 
 | Check | Result |
@@ -53,8 +54,8 @@ Two things were **not** measured, and are recorded as such rather than assumed:
 
 ## What was measured for 1.1.0
 
-On 2026-09-04, on macOS 15 (arm64), for the Claude Code plugin added in this
-release, with `claude` reporting `2.1.258` as in 1.0.0:
+On 2026-09-04, on macOS 26 (arm64), for the Claude Code plugin added in
+1.1.0, with `claude` reporting `2.1.258` as in 1.0.0:
 
 | Check | Result |
 | --- | --- |
@@ -66,23 +67,75 @@ release, with `claude` reporting `2.1.258` as in 1.0.0:
 | Hook command run under `sh`, output compared with the packaged file | byte-identical |
 | Plugin uninstalled | pass, nothing left in the inventory |
 
-Three things were **not** measured, and are recorded as such rather than
-assumed:
+Three things were **not** measured at the time 1.1.0 was published, and were
+recorded as such rather than assumed:
 
-- **That Claude Code invokes the hook and adds its output to a session.** No
+- ~~**That Claude Code invokes the hook and adds its output to a session.** No
   live session was run, because the CLI on the build machine had no valid
   authenticated session. What was verified is that the command resolves, runs
   and prints exactly the packaged file. That the host executes `SessionStart`
   hooks and adds their plain-text output to the context is the host's
-  documented behavior, relied on here rather than measured.
+  documented behavior, relied on here rather than measured.~~ **Measured
+  2026-09-04, after publication**, once the host CLI was re-authenticated. See
+  "What was measured after publishing 1.1.0" below.
 - **The Windows shell path.** The local suite runs the hook command under
   `sh`, which is not the shell Windows uses. Windows CI runs the same command
   under PowerShell, where `cat` is `Get-Content`, and compares the text; that
   job is where this is verified.
-- **The published `owner/repo` marketplace source.** Only the local directory
+- ~~**The published `owner/repo` marketplace source.** Only the local directory
   form was exercised, since the release had not been published when this was
   measured. The same workflow exercises the `owner/repo` form for the
-  Superpowers marketplace, so the host path is not itself untested.
+  Superpowers marketplace, so the host path is not itself untested.~~
+  **Measured 2026-09-04, after publication**, once there was a published
+  repository to install from. See "What was measured after publishing 1.1.0"
+  below.
+
+## What was measured after publishing 1.1.0
+
+On 2026-09-04, on the build machine — macOS 26 (arm64), `claude` `2.1.258` —
+against the published 1.1.0 artifact, by two different methods. The install
+rows used a real installation into a throwaway `CLAUDE_CONFIG_DIR`, so that the
+published marketplace source was genuinely exercised. The session rows used
+`claude --plugin-dir`, which loads a plugin for one session without installing
+it, because the authenticated session is bound to the real configuration
+directory and a throwaway one cannot start a session at all.
+
+| Check | Method | Result |
+| --- | --- | --- |
+| Published `owner/repo` marketplace source, added and installed with the documented commands | real install | pass, recorded source `github: MicheleDataBeat/super-hero-lite`, enabled at `1.1.0` |
+| Component inventory read back from the host | real install | 3 skills, 0 agents, 1 `SessionStart` hook |
+| Installed skills compared with the published tree | real install | byte-identical |
+| Hook output reaches a live session | `--plugin-dir` | pass |
+| All three skills available to a session under their plugin-qualified ids | `--plugin-dir` | pass |
+
+Neither session row asserts more than delivery. The hook's text reached the
+session's context; whether a session then follows the policy is not something
+this table measures.
+
+The hook check is a two-arm comparison, because the build machine also carries
+the installer's own block in `CLAUDE.md`, whose text is nearly identical. A
+control session with no plugin reported one `## Super-Hero Lite` block, naming
+`super-hero-core`. The same prompt with the plugin loaded reported two, the
+second naming `super-hero-lite:super-hero-core` and saying the skills come from
+the plugin — wording that appears only in the plugin's hook payload. A single
+session would have proved nothing, since the control arm alone already answers
+in the affirmative.
+
+The skill check is the same comparison. The control session listed the three
+Lite skills by their bare ids, alongside unrelated skills the machine happens
+to carry; the plugin arm listed all of those plus
+`super-hero-lite:super-hero-core`,
+`super-hero-lite:super-hero-release-to-public` and
+`super-hero-lite:super-hero-simplify`. Availability is what was observed: the
+prompt forbade tool use, so no skill was invoked. That comparison is also the
+measurement behind the claim that the two delivery forms coexist without either
+overwriting the other — though what coexisted was a session-loaded plugin
+beside an installed bootstrap block, since `--plugin-dir` installs nothing.
+Installed-state ownership is covered instead by the Windows job, which
+uninstalls the distribution and checks the plugin survives.
+
+One item from the 1.1.0 list stands: the Windows shell path is still verified
+by Windows CI rather than locally.
 
 ## Recorded upstream baseline for codex
 

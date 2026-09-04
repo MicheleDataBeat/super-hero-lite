@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 TAGLINE = "Lightweight governance for frontier AI coding agents."
 
 REQUIRED_FILES = (
@@ -785,6 +785,149 @@ class DocumentationConsistencyTests(unittest.TestCase):
         for plugin in plugin_identities:
             with self.subTest(plugin=plugin):
                 self.assertIn(f"`{plugin}`", upstream)
+
+
+class CompatibilityNarrativeTests(unittest.TestCase):
+    """The measured / not-measured narrative is prose bound only to other prose.
+
+    Nothing else in this repository can see it drift: the compatibility checks
+    above compare the rendered tables against `compatibility/upstreams.json`,
+    and this narrative has no metadata behind it. It shipped a contradiction
+    once — an item left standing in a not-measured list while a table below
+    recorded it as measured — past a validator reporting nine passes.
+
+    Each release's list is read on its own. Reading them together is the first
+    mistake this check made, and it is the one a careless edit would repeat.
+    """
+
+    NUMBER_WORDS = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5}
+
+    def not_measured_list(self, version):
+        """Return (declared count, bullets, struck bullets) for one release."""
+        text = document("docs/compatibility.md")
+        heading = f"## What was measured for {version}"
+        start = text.index(heading)
+        end = text.index("\n## ", start)
+        section = text[start:end]
+        preamble = re.search(r"(?P<count>\w+) things were \*\*not\*\* measured", section)
+        self.assertIsNotNone(preamble, f"{version} lost its not-measured preamble")
+        bullets = re.findall(
+            r"^- (?P<struck>~~)?\*\*", section[preamble.end() :], re.MULTILINE
+        )
+        return (
+            self.NUMBER_WORDS[preamble.group("count")],
+            len(bullets),
+            sum(1 for struck in bullets if struck),
+        )
+
+    def released_versions(self):
+        versions = re.findall(
+            r"^## What was measured for (\S+)$", document("docs/compatibility.md"),
+            re.MULTILINE,
+        )
+        self.assertTrue(versions, "no release records its measurements")
+        return versions
+
+    def test_each_not_measured_list_says_how_many_items_it_has(self):
+        for version in self.released_versions():
+            with self.subTest(version=version):
+                declared, total, _ = self.not_measured_list(version)
+                self.assertEqual(declared, total)
+
+    def standing_statements(self):
+        return dict(
+            (version, count)
+            for count, version in re.findall(
+                r"^(?P<count>\w+) items? from the (?P<version>\S+) list stands?",
+                document("docs/compatibility.md"),
+                re.MULTILINE,
+            )
+        )
+
+    def test_the_items_still_standing_are_counted_correctly(self):
+        """A closed item is struck through, never deleted, so what still stands
+        is derivable — and must agree with the sentence stating it."""
+        statements = self.standing_statements()
+        self.assertTrue(statements, "nothing states how many items still stand")
+        for version, count in statements.items():
+            with self.subTest(version=version):
+                _, total, struck = self.not_measured_list(version)
+                self.assertEqual(self.NUMBER_WORDS[count], total - struck)
+
+    def test_every_list_that_closed_something_says_what_still_stands(self):
+        """Checking only the sentences that exist lets one go missing. A list
+        with nothing struck has nothing to restate, so the obligation attaches
+        to the first closure rather than to every release."""
+        statements = self.standing_statements()
+        for version in self.released_versions():
+            _, _, struck = self.not_measured_list(version)
+            if not struck:
+                continue
+            with self.subTest(version=version):
+                self.assertIn(
+                    version,
+                    statements,
+                    f"{version} closed an item without saying what still stands",
+                )
+
+    def test_a_struck_item_says_where_its_measurement_went(self):
+        """Striking something through without saying what replaced it leaves a
+        reader unable to tell a closed item from an abandoned one.
+
+        The bar is deliberately higher than the word "Measured" appearing
+        somewhere in the tail, which "Never Measured" would also satisfy: the
+        tail must carry a bold, dated measurement claim and name a section that
+        exists to hold it.
+        """
+        text = document("docs/compatibility.md")
+        struck = re.findall(
+            r"^- ~~\*\*.*?~~(?P<tail>.*?)(?=\n- |\n\n)",
+            text,
+            re.DOTALL | re.MULTILINE,
+        )
+        self.assertTrue(struck, "no closed item; this check would pass vacuously")
+        for tail in struck:
+            with self.subTest(item=" ".join(tail.split())[:60]):
+                self.assertRegex(
+                    " ".join(tail.split()),
+                    r"\*\*Measured \d{4}-\d{2}-\d{2}[^*]*\*\*",
+                    "a closed item states when it was measured",
+                )
+                named = re.search(r'"(?P<section>[^"]+)"', tail)
+                self.assertIsNotNone(
+                    named, "a closed item names the section that closed it"
+                )
+                self.assertIn(f"## {named.group('section')}", text)
+
+
+    def test_every_platform_mention_matches_the_recorded_baseline(self):
+        """The table's Evidence cell is bound to `upstreams.json`; the prose
+        sentences beside it were not, so a correction could land in one and not
+        the other and still pass. The platform is one fact, so it is read from
+        the metadata and every mention must agree with it."""
+        import json
+
+        metadata = json.loads(document("compatibility/upstreams.json"))
+        evidence = {
+            profile["hostCliEvidence"]
+            for profile in metadata["distributions"]
+            if profile["id"] == "claude-code"
+        }
+        platform = re.search(r"macOS \d+ \([^)]+\)", evidence.pop())
+        self.assertIsNotNone(platform, "the recorded baseline names no platform")
+        # Loose when scanning, strict when reading the baseline: a mention
+        # written `macOS 15` or `macOS 26.1` has to be caught, not skipped for
+        # not looking canonical.
+        mentioned = set(
+            re.findall(
+                r"macOS [\d.]+(?: \([^)]+\))?", document("docs/compatibility.md")
+            )
+        )
+        self.assertEqual(
+            mentioned,
+            {platform.group(0)},
+            "a platform mention disagrees with compatibility/upstreams.json",
+        )
 
 
 class BootstrapBlockTests(unittest.TestCase):

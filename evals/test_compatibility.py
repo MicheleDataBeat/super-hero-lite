@@ -39,7 +39,7 @@ EXPECTED = {
     },
     "claude-code": {
         "testedHostCli": "2.1.258",
-        "hostCliEvidence": "measured 2026-09-03 on macOS 15 (arm64)",
+        "hostCliEvidence": "measured 2026-09-03 on macOS 26 (arm64)",
         "dependencies": {
             "mattpocock-skills": POCOCK_BASELINE,
             "superpowers": {

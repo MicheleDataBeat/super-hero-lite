@@ -1,6 +1,6 @@
 # Super-Hero Lite — Claude Code plugin
 
-This directory is the Super-Hero Lite plugin for Claude Code. It is the second delivery form of the [Claude Code Distribution](../README.md), not a separate product and not a third host: the same three skills and the same governance, installed by Claude Code's own package manager instead of by `install.sh`.
+This directory is the Super-Hero Lite plugin for Claude Code. It is the second delivery form of the [Claude Code Distribution](https://github.com/MicheleDataBeat/super-hero-lite/blob/main/distributions/claude-code/README.md), not a separate product and not a third host: the same three skills and the same governance, installed by Claude Code's own package manager instead of by `install.sh`.
 
 ## Install
 
@@ -18,7 +18,7 @@ claude plugin install super-hero-lite@super-hero-lite
 
 There is no repository to clone and no shell script to run. The plugin writes no state of its own; what it installs lives in the plugin cache Claude Code manages, so `$CLAUDE_CONFIG_DIR/skills/` and `CLAUDE.md` are never touched. To remove it, run `/plugin uninstall super-hero-lite@super-hero-lite`.
 
-The product's prerequisites are unchanged and are *not* validated here. `super-hero-core` reaches for the eleven Matt Pocock skills and the `superpowers@superpowers-marketplace` plugin inside `CONTROLLED` work, and this delivery form checks for neither: the host owns the lifecycle, so a missing prerequisite surfaces when the technique is wanted rather than at install time. The installer's [prerequisite contract](../README.md#prerequisites) lists both and is what to install alongside this plugin.
+The product's prerequisites are unchanged and are *not* validated here. `super-hero-core` reaches for the eleven Matt Pocock skills and the `superpowers@superpowers-marketplace` plugin inside `CONTROLLED` work, and this delivery form checks for neither: the host owns the lifecycle, so a missing prerequisite surfaces when the technique is wanted rather than at install time. The installer's [prerequisite contract](https://github.com/MicheleDataBeat/super-hero-lite/blob/main/distributions/claude-code/README.md#prerequisites) lists both and is what to install alongside this plugin.
 
 The marketplace manifest is at the repository root, so the marketplace and the plugin ship from one repository.
 
@@ -55,7 +55,7 @@ A plugin may not reference a path outside its own root, so `skills/` here is a c
 
 The hook uses shell form. Claude Code documents that as `sh` on macOS and Linux, and Git Bash — or PowerShell, when Git Bash is absent — on Windows. `cat` is a POSIX utility and a PowerShell alias for `Get-Content`, so one command covers all three without shipping a script or depending on an interpreter. The host substitutes `${CLAUDE_PLUGIN_ROOT}` before any shell sees the command, and the path is quoted so an installation directory containing a space still resolves.
 
-What is exercised, and what is not, is recorded in [Compatibility](../../../docs/compatibility.md). `evals/test_claude_code_plugin.py` runs the command under `sh` and compares its output to the packaged file byte for byte; Windows CI runs it under PowerShell and compares the text. Neither starts a real session, so that Claude Code invokes the hook and adds its output to the context rests on the host's documented behaviour rather than on a measurement made here.
+What is exercised, and what is not, is recorded in [Compatibility](https://github.com/MicheleDataBeat/super-hero-lite/blob/main/docs/compatibility.md). `evals/test_claude_code_plugin.py` runs the command under `sh` and compares its output to the packaged file byte for byte; Windows CI runs it under PowerShell and compares the text. Neither starts a real session, so neither of those two checks establishes that Claude Code invokes the hook and adds its output to the context. That was measured separately, by hand, after 1.1.0 was published, and is recorded in Compatibility.
 
 Claude Code adds a `SessionStart` hook's plain-text stdout to the session, which is what makes this the plugin's equivalent of the block the installer writes.
 
