@@ -174,7 +174,9 @@ installed, rather than what a tag suggests, is the point of the column.
 ## What "tested" means
 
 The recorded refs are the revisions this release was tested against. They are a
-record, not a requirement.
+record, not a requirement, and a distribution's validator prints them under
+`NOTE` rather than `PASS`, because nothing compares them with what is
+installed.
 
 No distribution ever compares an installed version against a recorded one. A
 prerequisite installed at a different version, later or earlier, is not

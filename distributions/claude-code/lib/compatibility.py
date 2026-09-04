@@ -237,7 +237,12 @@ def _validate_superpowers() -> str:
 
 
 def validate_upstreams(home: Path, claude_home: Path, metadata: Path) -> list[str]:
-    """Return human-readable PASS lines; reject unsupported installed state."""
+    """Return human-readable result lines; reject unsupported installed state.
+
+    Two of the three lines are verdicts from checks that raise when they fail.
+    The third is the recorded baseline, which nothing verifies against the
+    installed state, so it is not labelled as a verdict.
+    """
     profile = _load_metadata(metadata)
     pocock = _dependency(profile, "mattpocock-skills")
     superpowers = _dependency(profile, "superpowers")
@@ -257,6 +262,7 @@ def validate_upstreams(home: Path, claude_home: Path, metadata: Path) -> list[st
     return [
         _validate_pocock(home, claude_home),
         _validate_superpowers(),
-        f"PASS  Tested upstream refs: Pocock {pocock.get('testedRef')}, "
+        "NOTE  Recorded upstream refs, not verified against what is installed: "
+        f"Pocock {pocock.get('testedRef')}, "
         f"Superpowers {superpowers.get('testedRef')}",
     ]

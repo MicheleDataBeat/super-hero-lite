@@ -8,6 +8,45 @@ not a fork, so the ancestor's release chronology is deliberately not carried
 over. What was inherited and what was removed is recorded in
 [Lineage](docs/lineage.md).
 
+## 1.1.2 — 2026-09-04
+
+### Fixed
+
+- Both distributions' validators reported the recorded upstream refs as a
+  `PASS` line. Nothing verifies those refs: no installed version is read, by
+  design, and [Compatibility](docs/compatibility.md) has always said they are
+  "a record, not a requirement". A verdict was being printed for a check that
+  does not exist — this project's own declared defect class, in its own
+  validator, public since 1.0.0. The line now reads `NOTE  Recorded upstream
+  refs, not verified against what is installed:`, and the document says that
+  is how it is labelled. The two real prerequisite verdicts either side of it
+  are unchanged, and still fail closed.
+
+### Added
+
+- `evals/test_repository_contract.py` holds that label in place. It calls
+  `validate_upstreams` in both distributions and reads the lines it returns,
+  requiring exactly three of them: the two prerequisite verdicts, and the
+  recorded refs last under the `NOTE`, built from the recorded metadata. It
+  fails if either distribution relabels the line, if a fourth line is added
+  anywhere, if the two distributions' sentences diverge, or if the document
+  stops describing the label.
+
+  It pins this one line rather than a general rule. Two broader rules were
+  written and discarded first, both of which would have read like guarantees
+  while proving less than they claimed. "Every `PASS` sits in a function that
+  can raise" is satisfied by the defective line itself, since the function
+  emitting it raises on invalid metadata. And an earlier version of this check
+  asserted against the module's source text, which was wrong in both
+  directions: reflowing the string failed it, while the same verdict
+  reintroduced under different wording passed it — along with the whole
+  nine-check contract. Both bypasses were demonstrated before this was written
+  the way it is.
+
+  The two distributions record different Superpowers revisions on purpose, so
+  their lines are not identical and comparing them to each other would be
+  wrong. The sentence is what must match.
+
 ## 1.1.1 — 2026-09-04
 
 A corrected record, and a check so it stays corrected. No skill,

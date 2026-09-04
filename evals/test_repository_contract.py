@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 TAGLINE = "Lightweight governance for frontier AI coding agents."
 
 REQUIRED_FILES = (
@@ -785,6 +785,91 @@ class DocumentationConsistencyTests(unittest.TestCase):
         for plugin in plugin_identities:
             with self.subTest(plugin=plugin):
                 self.assertIn(f"`{plugin}`", upstream)
+
+
+class ValidatorVerdictTests(unittest.TestCase):
+    """The recorded upstream refs carry a NOTE, not a verdict, in both
+    distributions.
+
+    Nothing compares those refs with what is installed — no version is read
+    anywhere, by design, and the document says so — so a `PASS` beside them
+    announced a check that does not exist.
+
+    This calls the real function and reads the lines it returns. An earlier
+    version asserted against the module's source text and was wrong in both
+    directions: reflowing the same string failed it, while the same verdict
+    reintroduced under different wording passed it, along with the whole
+    nine-check contract. Pinning what a validator prints is the property;
+    pinning how the literal happens to wrap is not.
+    """
+
+    RECORDED_REFS = "NOTE  Recorded upstream refs, not verified"
+    STUBS = ("PASS  pocock prerequisite", "PASS  superpowers plugin")
+
+    def upstream_lines(self, distribution):
+        """Run `validate_upstreams` with both prerequisite checks stubbed.
+
+        The stubs stand in for the two real verdicts, which need a host; what
+        is under test is the third line and how many verdicts accompany it.
+        The metadata read is the repository's own.
+        """
+        module = load_compatibility_module(distribution)
+        module._validate_pocock = lambda *arguments, **keywords: self.STUBS[0]
+        module._validate_superpowers = lambda *arguments, **keywords: self.STUBS[1]
+        return module.validate_upstreams(
+            Path("/nonexistent"),
+            Path("/nonexistent"),
+            ROOT / "compatibility" / "upstreams.json",
+        )
+
+    def test_the_recorded_refs_are_not_reported_as_a_verdict(self):
+        for distribution in HOST_DISTRIBUTIONS:
+            with self.subTest(distribution=distribution):
+                lines = self.upstream_lines(distribution)
+                # Three lines, no more: checking only the last would let a
+                # fourth be inserted above it, and a verdict inserted rather
+                # than appended is the same defect wearing a different token.
+                self.assertEqual(len(lines), 3, lines)
+                self.assertTrue(
+                    lines[-1].startswith(self.RECORDED_REFS),
+                    f"the recorded refs are labelled {lines[-1]!r}",
+                )
+                self.assertEqual(
+                    [line for line in lines if line.startswith("PASS  ")],
+                    list(self.STUBS),
+                    "a verdict is reported for something this function does not check",
+                )
+
+    def recorded_refs(self, distribution):
+        import json
+
+        metadata = json.loads(document("compatibility/upstreams.json"))
+        profile = next(
+            item
+            for item in metadata["distributions"]
+            if item["id"] == distribution
+        )
+        refs = {item["id"]: item["testedRef"] for item in profile["dependencies"]}
+        return refs["mattpocock-skills"], refs["superpowers"]
+
+    def test_both_distributions_use_the_same_sentence(self):
+        """The two distributions record different Superpowers revisions on
+        purpose, so the lines are not identical and comparing them to each
+        other would be wrong. What must match is the sentence, and the values
+        must come from the metadata rather than from anywhere else."""
+        for distribution in HOST_DISTRIBUTIONS:
+            pocock, superpowers = self.recorded_refs(distribution)
+            with self.subTest(distribution=distribution):
+                self.assertEqual(
+                    self.upstream_lines(distribution)[-1],
+                    "NOTE  Recorded upstream refs, not verified against what is "
+                    f"installed: Pocock {pocock}, Superpowers {superpowers}",
+                )
+
+    def test_the_document_states_how_the_refs_are_labelled(self):
+        compatibility = document("docs/compatibility.md")
+        self.assertIn("record, not a requirement", compatibility)
+        self.assertIn("`NOTE` rather than `PASS`", compatibility)
 
 
 class CompatibilityNarrativeTests(unittest.TestCase):
