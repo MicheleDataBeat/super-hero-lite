@@ -85,6 +85,11 @@ export.
 If no valid contract exists, discover the facts read-only, resolve the
 remaining material decisions with the user, then write the contract.
 
+When the private repository is itself about to become an archive (a public
+target reborn under the same name, see `references/public-history.md`), keep
+the contracts in a separate local release folder outside every source tree,
+so that no source commit is needed to record policy.
+
 Use `assets/public-release-contract.yaml` as the starting schema. Fill
 project-specific values only from discovered facts or decisions the user
 actually made.
@@ -120,6 +125,15 @@ Preparation and verification do not authorize the push. Immediately before the
 externally visible publish action, show a concise release preview and ask for
 explicit `PUBLISH` confirmation.
 
+### 9. Preparer and publisher may be different hands
+
+The user may reserve the externally visible actions to themselves. In that
+mode the workflow prepares the staging tree, runs every check and hands over an
+ordered list of exact commands (create the target, enable its site, push,
+verify), and the final gate is the user running the push. The preparation
+report then states explicitly that no push, no target creation and no
+visibility change happened, and the user's own command is the authorization.
+
 ## Release preview
 
 At minimum show:
@@ -140,6 +154,7 @@ Checks:
 - tests: PASS / N/A by explicit contract
 - build: PASS / N/A by explicit contract
 - public diff review: PASS
+- CI workflows the push will trigger: <names, or none>
 
 No private Git history or private Issues will be transferred.
 

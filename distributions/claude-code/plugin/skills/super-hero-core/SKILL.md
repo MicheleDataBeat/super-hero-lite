@@ -64,7 +64,9 @@ Use when the action crosses a consequential boundary:
 - externally visible writes not already explicitly authorized.
 
 Resolve the consequential decision and obtain authorization for that exact
-action before the boundary action. Authorization already given in the current
+action before the boundary action. The authorization may consist of the user
+running the boundary command themselves, after the session has prepared,
+verified and handed over the exact command. Authorization already given in the current
 user contract for that exact action is sufficient; do not re-ask for what the
 user has already authorized. Authorization for one boundary action never
 generalizes to another.

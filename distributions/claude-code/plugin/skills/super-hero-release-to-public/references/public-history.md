@@ -34,6 +34,16 @@ the latest verified public branch, reviewing the diff, and committing the
 public delta. That gives useful public history without leaking private
 development archaeology.
 
+## Reborn slug
+
+When the public repository must keep the private repository's name, the
+private one is renamed to an archive (kept private, outside any push policy)
+before the public one is created empty from the sanitized snapshot. The
+private checkouts then point at the archive; later public changes start from
+the public clone or the export, never from the private checkout, so the two
+histories can never be joined. A push policy that pins the public branch to
+the export's initial commit enforces this mechanically.
+
 ## Existing conflicting target
 
 If the target already holds unrelated history, unexpected files, other

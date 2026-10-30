@@ -50,6 +50,32 @@ After the mappings are applied, the forbidden-literal scan must come back
 clean. Binary assets with ambiguous branding need inspection or a user
 decision, not blind string replacement.
 
+## Concept scan, not only names
+
+A rename passes the name scan and still ships its own archaeology. Scan the
+staging tree for these patterns and resolve every hit:
+
+- wording that describes the private model: "private repository", "artifacts
+  stay here", "publishing is done from the other repository (docs/…)";
+- rename archaeology: "formerly X", "renamed from", naming-update preambles,
+  release notes of versions published under the earlier names (a repository
+  reborn without history starts its public changelog at the first public
+  version; older entries belong to an excluded internal changelog);
+- references to excluded paths, in documents, workflows, scripts and policy
+  files;
+- remnants of an earlier distribution model: un-ignore rules and comments in
+  ignore files, build scripts that mention bundled artifacts that no longer
+  ship;
+- vendor or third-party internals in technical notes (addresses inside a
+  vendor image, byte counts at those addresses) that the product's own format
+  description does not need;
+- machine paths, user names and process identifiers;
+- build-time dependencies on files the contract excludes (a checker that
+  build scripts call must ship, or the public tree cannot build).
+
+Identifiers kept for compatibility (module, variable, environment names) are
+the only allowed hits, and the contract lists them as technical tokens.
+
 ## Public-facing completeness
 
 Sanitization must not leave the public project broken. Verify that readme

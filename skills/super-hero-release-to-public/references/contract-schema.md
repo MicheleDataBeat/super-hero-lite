@@ -15,6 +15,8 @@ source:
   required_visibility: private
   branch: main
   require_clean_tree: true
+  commit: "<exact sha>"                 # the revision that was exported
+  online_archive: owner/private-repo-archive-2026-10   # optional: reborn slug
 
 public:
   repository: owner/public-repo
@@ -47,7 +49,14 @@ verification:
   secret_scanner: gitleaks
   test_commands: []
   build_commands: []
+  pre_test_build_commands: []   # what CI builds before its tests
   forbidden_literal_scan: true
+  concept_scan: true
+
+publication:
+  publisher: user          # user | session: who runs the push
+  create_target_if_missing: false
+  enable_site_before_push: false
 ```
 
 Project-specific values must come from discoverable facts or from decisions the

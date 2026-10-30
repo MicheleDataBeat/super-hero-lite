@@ -8,6 +8,35 @@ not a fork, so the ancestor's release chronology is deliberately not carried
 over. What was inherited and what was removed is recorded in
 [Lineage](docs/lineage.md).
 
+## 1.1.3 — 2026-10-30
+
+### Added
+
+- `super-hero-release-to-public` now covers the cases a real multi-repository
+  re-publication met in practice. The contract may live outside the source
+  tree when the private repository is itself about to become an archive. A
+  "preparer and publisher" mode, where the workflow prepares and verifies
+  everything and the user runs the push, is a first-class authorization path.
+  Discovery records the build outputs that tests need but Git ignores, and
+  Phase 6 replicates CI's pre-test build in the isolated copy. Sanitization
+  gains a concept scan (private-model wording, rename archaeology, references
+  to excluded paths, remnants of an earlier distribution model, vendor
+  internals in technical notes, machine paths, build-time dependencies on
+  excluded files) and a grep of every excluded path inside the staging tree.
+  Public history documents the reborn slug: rename the private repository to
+  an archive, re-point local checkouts, create the empty target (which removes
+  the redirect), pin the public branch to the export's initial commit.
+  Publication enables a workflow-built site before the first push; post-
+  publication verification adds the triggered workflows and the live site.
+  The contract schema records the exported commit, an optional online archive,
+  pre-test build commands, the concept scan and who publishes.
+
+### Changed
+
+- `super-hero-core`, EXTERNAL mode: the authorization for a boundary action
+  may consist of the user running the prepared and verified command
+  themselves.
+
 ## 1.1.2 — 2026-09-04
 
 ### Fixed

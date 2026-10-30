@@ -15,6 +15,8 @@ because publication cannot be undone.
 - release-control and private paths absent from the staged tree;
 - a real secret scan passes;
 - the forbidden-literal scan passes;
+- the concept scan passes and the staging tree references no excluded path;
+- the build steps CI runs before tests were replicated in the isolated copy;
 - licence, version and readme consistency passes;
 - required tests pass in the isolated staging context;
 - the required build passes in the isolated staging context;
@@ -22,7 +24,9 @@ because publication cannot be undone.
 - the target branch's remote head is unchanged immediately before the push;
 - explicit final `PUBLISH` confirmation obtained;
 - the public target's commit, tag and visibility verified after the push;
-- the private source's visibility re-verified as PRIVATE after publication.
+- the private source's visibility re-verified as PRIVATE after publication;
+- the workflows triggered by the push completed, and the published site, if
+  any, serves the expected version.
 
 ## Fail closed
 
